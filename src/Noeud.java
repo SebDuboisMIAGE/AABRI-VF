@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 
 public class Noeud {
 	
@@ -42,6 +44,22 @@ public class Noeud {
 		this.sad = new Noeud(valeur);
 	}
 	
+	public Noeud getMinValue(){
+		if(this.getSag() == null){
+			return this;
+		} else {
+			return this.getSag().getMinValue();
+		}
+	}
+	
+	public Noeud getMaxValue(){
+		if(this.getSad() == null){
+			return this;
+		} else {
+			return this.getSad().getMaxValue();
+		}
+	}
+	
 	public void parcoursPrefixe() {
 	    System.out.println(this.getValeur());
 	    this.chaine += this.getValeur() + ":";
@@ -79,8 +97,30 @@ public class Noeud {
 	    }
 	}
 
+	public ArrayList getListNoeud(ArrayList ar) {
+		ar.add(this);
+		if (getSag() != null) sag.getListNoeud(ar);
+		if (getSad() != null) sad.getListNoeud(ar);
+		return ar;
+	}
+
 	@Override
 	public String toString() {
 		return "Noeud [valeur=" + valeur + "]";
+	}
+	public boolean verificationABRI(Boolean bool) {
+		if (!bool) return false;
+		if (sag != null) sag.verificationABRI(bool);
+		if (sad != null) sad.verificationABRI(bool);
+		if (sag != null && valeur > sag.valeur) return false;
+		if (sad != null && valeur < sad.valeur) return false;
+		return true;
+	}
+	public boolean verificationBorne(boolean bool, int min, int max) {
+		if (!bool) return false;
+		if (sag != null) sag.verificationBorne(bool, min, max);
+		if (sad != null) sad.verificationBorne(bool, min, max);
+		if (min > valeur && valeur > max) return false;
+		return true;
 	}
 }

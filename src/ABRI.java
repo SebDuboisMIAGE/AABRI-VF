@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class ABRI {
 
 	private Noeud racine;
@@ -49,24 +51,34 @@ public class ABRI {
 	public ABRI() {
 	}
 	
-	public Noeud inserer(int x, Noeud a) {  // Insertion d'un noeud dans l'ABRI
+	public Noeud inserer(int x, Noeud a) {
 		if (a == null) return new Noeud(x);
 		if (x > a.getValeur()) a.setSag(inserer(x, a.getSag()));
 		else if (x < a.getValeur()) a.setSad(inserer(x, a.getSad())); 
 		return a;
 	}
 	
-	public ABRI CreerABRI(int[] minmax, int[] val)	// Creation d'un ABRI en fonction du tableau d'intervalle et du tableau d'element
+	public ABRI CreerABRI(int min, int max, int[] val)
 	{
-		this.setMin(minmax[0]);
-		this.setMax(minmax[1]);
+		this.setMin(min);
+		this.setMax(max);
+		for (int z : val){
+			this.racine = inserer(z, this.racine); 
+		}
+		return this;
+	}
+	
+	public ABRI CreerABRI(int min, int max, ArrayList<Integer> val)
+	{
+		this.setMin(min);
+		this.setMax(max);
 		for (int z : val){
 			this.racine = inserer(z, this.racine); 
 		}
 		return this;
 	}
 
-	public Noeud rechercherEtSupprimer(int x, Noeud a) {  // Rechercher et supprimer un element
+	public Noeud rechercherEtSupprimer(int x, Noeud a) {
 		if (a == null) return null;
 		if (x == a.getValeur()) return supprimerRacine(a);
 		if (x > a.getValeur()) a.setSag(rechercherEtSupprimer(x, a.getSag())); 
@@ -74,7 +86,7 @@ public class ABRI {
 		return a;
 	}
 	
-	public Noeud supprimerRacine(Noeud a) { // Suppression de la racine d'un ABRI 
+	public Noeud supprimerRacine(Noeud a) {
 		if (a.getSag() == null) return a.getSad();
 		if (a.getSad() == null) return a.getSag();
 		Noeud f = dernierDescendant(a.getSad());
@@ -83,7 +95,7 @@ public class ABRI {
 		return a;
 	}
 	
-	public void insererElement(int element){	// Insertion d'un element dans l'ABRI
+	public void insererElement(int element){
 		if (this.min < element && this.max > element)
 		{
 			this.inserer(element, this.getRacine());
@@ -101,7 +113,7 @@ public class ABRI {
 		}
 	}
 	
-	public void supprimerElement(int element){   //Suppression d'un element de l'ABRI
+	public void supprimerElement(int element){
 		if (this.min < element && this.max > element)
 		{
 			this.rechercherEtSupprimer(element, this.getRacine());
@@ -119,12 +131,28 @@ public class ABRI {
 		}
 	}
 	
-	public Noeud dernierDescendant(Noeud a) { // Trouver dernier descendant de la racine pour suppression
+	public Noeud dernierDescendant(Noeud a) {
 		if (a.getSag()== null) return a;
 		return dernierDescendant(a.getSag());
 	}
 
-	public String afficherToutArbre(){  // Afficher tout l'ABRI
+	/*
+	public void insererElementABR(ABR abr){
+		if(this.getRacine() != null)
+		{
+			abr.inserer(racine.getValeur(), abr.getRacine());
+			if(racine.getSag() != null)
+			{
+				racine.getSag().insererElementABR(abr);
+			}
+		    if(racine.getSad() != null)
+		    {
+		    	racine.getSad().insererElementABR(abr);
+		    }
+		}
+	}
+	*/
+	public String afficherToutArbre(){
 		String chaine = "";
 		chaine += this.ecrireParcoursPrefixeFichier();
 		if(this.getSag() != null)
@@ -138,7 +166,7 @@ public class ABRI {
 		return chaine;
 	}
 	
-	public String ecrireToutArbreFichier()  //Recupere la chaine correspondant à tout les ABRI
+	public String ecrireToutArbreFichier()
 	{
 		String chaine = "";
 		chaine += this.ecrireParcoursPrefixeFichier();
@@ -153,7 +181,7 @@ public class ABRI {
 		return chaine;
 	}
 	
-	public String ecrireParcoursPrefixeFichier()  // Recupere la chaine correspondant a un ABRI
+	public String ecrireParcoursPrefixeFichier()
 	{
 		String chaine = "";
 		chaine += this.getMin() + ":" + this.getMax() + ";";
@@ -172,5 +200,80 @@ public class ABRI {
 		chaine = chaine.substring(0,chaine.length()-1);
 		chaine += "\n";
 		return chaine;
+	}
+	
+	public boolean dispoIntervalle(int[] tab){
+		boolean intervallePossible = true;
+		if (((this.getMax() > tab[0]) && (this.getMin() < tab[0])) || ((this.getMax() > tab[1]) && (this.getMin() < tab[1])) || ((this.getMin() > tab[0]) && (this.getMax() < tab[1]))){
+			intervallePossible = false;
+		}
+		else{
+			if(this.getSag() != null){
+				intervallePossible = this.getSag().dispoIntervalle(tab);
+			}
+			if(this.getSad() != null){
+				intervallePossible = this.getSad().dispoIntervalle(tab);
+			}
+		}
+		return intervallePossible;
+	}
+
+	public void parcoursPrefixe() {
+		System.out.println("Min : " + this.min);
+		System.out.println("Max : " + this.max);
+		
+		if(this.getRacine() != null)
+		{
+			System.out.println(racine.getValeur());
+			chainePrefixe += racine.getValeur() + ":"; 
+			if(racine.getSag() != null)
+			{
+				racine.getSag().setChaine("");
+				racine.getSag().parcoursPrefixe();
+				chainePrefixe += racine.getSag().getChaine();
+			}
+		    if(racine.getSad() != null)
+		    {
+		    	racine.getSad().setChaine("");
+		    	racine.getSad().parcoursPrefixe();
+		    	chainePrefixe += racine.getSad().getChaine();
+		    }
+		}
+		else
+		{
+			System.out.println("null");
+		}
+	}
+
+	public boolean verificationDisjoint() {
+		if (sad != null){
+			if(max >= sad.min) {
+				return false;
+			} else {
+				if(!sad.verificationDisjoint()){
+					return false;
+				}
+			}
+		}
+		if (sag != null){
+			if(min <= sag.max) {
+				return false;
+			} else {
+				if (!sag.verificationDisjoint()){
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	public boolean verificationABRI(boolean bool) {
+		if (racine != null) return racine.verificationABRI(true);
+		return false;
+	}
+	
+	public boolean verificationBorne(boolean bool) {
+		if (racine != null) return racine.verificationBorne(true, min, max);
+		return false;
 	}
 }
